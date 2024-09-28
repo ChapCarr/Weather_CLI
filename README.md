@@ -18,7 +18,10 @@ Currently there are plans to add more functionality in particular a GUI for user
     cd weather-api-project
   ```
 2. **Create key.txt**
-  In the project directory create a file 'key.txt' and then past your API key directly into it
+
+   1. Go to project directory
+   2. Create file named "key.txt"
+   3. Paste your API key into file
 
 3 **Run the program**
   ```bash
