@@ -14,7 +14,7 @@ Currently there are plans to add more functionality in particular a GUI for user
 
 1. **Clone this repo**
  ```bash
-    git clone https://github.com/chapcarr/weather-api-project.git
+    git clone https://github.com/ChapCarr/Weather_CLI.git
     cd weather-api-project
   ```
 2. **Create key.txt**
