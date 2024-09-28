@@ -8,6 +8,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"log"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 type WeatherResponse struct {
@@ -81,6 +86,20 @@ func GetRequest(url string) WeatherResponse {
 func main() {
 	var cityRaw string
 	scanner := bufio.NewReader(os.Stdin)
+	app := app.New()
+	window := app.NewWindow("Weather App")
+	window.Resize(fyne.NewSize(500,500))
+
+	
+	input := widget.NewEntry()
+	input.SetPlaceHolder("Enter a city")
+
+	content := container.NewVBox(input, widget.NewButton("Enter", func(){log.Println("Content was:", input.Text)}))
+	
+
+
+	window.SetContent(content)
+	window.ShowAndRun()
 
 	// Scan and Parse user input
 	fmt.Print("Enter a city: ")
