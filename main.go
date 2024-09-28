@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -48,6 +47,37 @@ func getKey(filename string) string {
 	return ""
 }
 
+func CleanInput(city string) string {
+	// Replace whitespace with _ and remove the newline char
+	cityClean := strings.Replace(city, " ", "_", -1)
+	return strings.ReplaceAll(cityClean, "\n", "")
+}
+
+func errHandler(err error) {
+	if err != nil {
+		fmt.Printf("ERROR: %s", err)
+	}
+}
+
+func GetRequest(url string) WeatherResponse {
+	// Make the request
+	resp, err := http.Get(url)
+	errHandler(err)
+	defer resp.Body.Close()
+
+	//Read in the response
+	body, err := io.ReadAll(resp.Body)
+	errHandler(err)
+
+	// Process the JSON
+	var weather WeatherResponse
+	err = json.Unmarshal(body, &weather)
+	errHandler(err)
+
+	return weather
+
+}
+
 func main() {
 	var cityRaw string
 	scanner := bufio.NewReader(os.Stdin)
@@ -55,28 +85,10 @@ func main() {
 	// Scan and Parse user input
 	fmt.Print("Enter a city: ")
 	cityRaw, err := scanner.ReadString('\n')
-	cityClean := strings.Replace(cityRaw, " ", "_", -1)
-	cityClean = strings.ReplaceAll(cityClean, "\n", "")
+	errHandler(err)
 
-	//GET request
-	url := "http://api.weatherapi.com/v1/current.json?key="+getKey("key.txt")+"&q=" + cityClean + "&aqi=no"
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer resp.Body.Close()
-
-	// Read in
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	var weather WeatherResponse
-	err = json.Unmarshal(body, &weather)
-	if err != nil {
-		log.Fatalln("ERROR: unmarshalling: ", err)
-	}
+	url := "http://api.weatherapi.com/v1/current.json?key=" + getKey("key.txt") + "&q=" + CleanInput(cityRaw) + "&aqi=no"
+	weather := GetRequest(url)
 
 	fmt.Printf("City: %s\n", weather.Location.Name)
 	fmt.Printf("Temperature %.1fF / %.1fC \n", weather.Current.TempF, weather.Current.TempC)
