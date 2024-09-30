@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"log"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -83,32 +82,44 @@ func GetRequest(url string) WeatherResponse {
 
 }
 
+func printEntry(city string){
+	fmt.Println(city)
+}
+
 func main() {
-	var cityRaw string
-	scanner := bufio.NewReader(os.Stdin)
+	
+
+ 	scanner := bufio.NewReader(os.Stdin)
 	app := app.New()
+
+	//Build window
 	window := app.NewWindow("Weather App")
 	window.Resize(fyne.NewSize(500,500))
 
-	
+	// Entry widget
 	input := widget.NewEntry()
 	input.SetPlaceHolder("Enter a city")
 
-	content := container.NewVBox(input, widget.NewButton("Enter", func(){log.Println("Content was:", input.Text)}))
+	content := container.NewVBox(input, widget.NewButton("Enter",func(){
+		 CleanInput(input.Text)
+	}))
 	
-
-
 	window.SetContent(content)
+
 	window.ShowAndRun()
 
 	// Scan and Parse user input
 	fmt.Print("Enter a city: ")
 	cityRaw, err := scanner.ReadString('\n')
 	errHandler(err)
+	cityURL := CleanInput(cityRaw)
 
-	url := "http://api.weatherapi.com/v1/current.json?key=" + getKey("key.txt") + "&q=" + CleanInput(cityRaw) + "&aqi=no"
-	weather := GetRequest(url)
-
+	url := "http://api.weatherapi.com/v1/current.json?key=" + getKey("key.txt") + "&q=" + cityURL + "&aqi=no"
+	
+	weather := GetRequest(url) // GET REQUEST
+	
+	
+	window.ShowAndRun()
 	fmt.Printf("City: %s\n", weather.Location.Name)
 	fmt.Printf("Temperature %.1fF / %.1fC \n", weather.Current.TempF, weather.Current.TempC)
 
