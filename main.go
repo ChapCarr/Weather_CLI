@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -34,19 +35,24 @@ type WeatherResponse struct {
 func getKey(filename string) string {
 	file, err := os.Open(filename)
 	if err != nil {
+
 		panic(err)
 	}
 
+	defer file.Close()
+
 	scanner := bufio.NewScanner(file)
 	if scanner.Scan() {
-		return scanner.Text()
+		key := scanner.Text()
+
+		return key
+	} else {
+		fmt.Println("Failed to read key from file, Scan returned false.")
 	}
 
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
-
-	defer file.Close()
 
 	return ""
 }
@@ -82,45 +88,43 @@ func GetRequest(url string) WeatherResponse {
 
 }
 
-func printEntry(city string){
+func printEntry(city string) {
 	fmt.Println(city)
 }
 
 func main() {
-	
 
- 	scanner := bufio.NewReader(os.Stdin)
 	app := app.New()
 
 	//Build window
 	window := app.NewWindow("Weather App")
-	window.Resize(fyne.NewSize(500,500))
+	window.Resize(fyne.NewSize(500, 500))
 
 	// Entry widget
 	input := widget.NewEntry()
 	input.SetPlaceHolder("Enter a city")
 
-	content := container.NewVBox(input, widget.NewButton("Enter",func(){
-		 CleanInput(input.Text)
-	}))
-	
+	resultLabel := widget.NewLabel("Weather")
+
+	button := widget.NewButton("Enter", func() {
+
+		city := CleanInput(string(input.Text))
+		if city == "" {
+			resultLabel.SetText("Please enter correct value eg 'austin' or 'san antonio'")
+			return
+		}
+		key := getKey("key.txt")
+		url := "http://api.weatherapi.com/v1/current.json?key=" + key + "&q=" + city + "&aqi=no"
+
+		weather := GetRequest(url)
+
+		resultText := fmt.Sprintf("City: %s\nTemperature: %.1fF / %.1fC\nCondition: %s",
+			weather.Location.Name, weather.Current.TempF, weather.Current.TempC, weather.Current.Condition.Text)
+		resultLabel.SetText(resultText)
+	})
+
+	content := container.NewVBox(input, button, resultLabel)
 	window.SetContent(content)
-
 	window.ShowAndRun()
-
-	// Scan and Parse user input
-	fmt.Print("Enter a city: ")
-	cityRaw, err := scanner.ReadString('\n')
-	errHandler(err)
-	cityURL := CleanInput(cityRaw)
-
-	url := "http://api.weatherapi.com/v1/current.json?key=" + getKey("key.txt") + "&q=" + cityURL + "&aqi=no"
-	
-	weather := GetRequest(url) // GET REQUEST
-	
-	
-	window.ShowAndRun()
-	fmt.Printf("City: %s\n", weather.Location.Name)
-	fmt.Printf("Temperature %.1fF / %.1fC \n", weather.Current.TempF, weather.Current.TempC)
 
 }
