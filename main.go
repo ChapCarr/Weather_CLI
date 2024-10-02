@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -98,13 +99,15 @@ func main() {
 
 	//Build window
 	window := app.NewWindow("Weather App")
-	window.Resize(fyne.NewSize(500, 500))
+	window.Resize(fyne.NewSize(500, 400))
 
 	// Entry widget
 	input := widget.NewEntry()
 	input.SetPlaceHolder("Enter a city")
+	input.Resize(fyne.NewSize(100, 30))
 
-	resultLabel := widget.NewLabel("Weather")
+	title := widget.NewLabelWithStyle("Weather Forecast", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
+	resultLabel := widget.NewLabel("")
 
 	button := widget.NewButton("Enter", func() {
 
@@ -121,9 +124,19 @@ func main() {
 		resultText := fmt.Sprintf("City: %s\nTemperature: %.1fF / %.1fC\nCondition: %s",
 			weather.Location.Name, weather.Current.TempF, weather.Current.TempC, weather.Current.Condition.Text)
 		resultLabel.SetText(resultText)
+
 	})
 
-	content := container.NewVBox(input, button, resultLabel)
+	content := container.NewVBox(
+		title,
+		container.NewPadded(input),
+		container.NewPadded(button),
+		layout.NewSpacer(),
+		container.NewCenter(resultLabel),
+		layout.NewSpacer(),
+	)
+
+	//content := container.NewVBox(input, button, resultLabel)
 	window.SetContent(content)
 	window.ShowAndRun()
 
